@@ -4,50 +4,65 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo 'Fetching source code from public GitHub repo...'
+                echo "Fetching source code from GitHub..."
                 git branch: 'main', url: 'https://github.com/kaviya-sharon14/onlyfrontend.git'
             }
         }
 
         stage('Setup Python Environment') {
             steps {
-                echo 'Setting up virtual environment...'
-                bat 'python -m venv venv'
-                bat '.\\venv\\Scripts\\activate && python -m pip install --upgrade pip'
+                echo "Setting up virtual environment..."
+                bat '''
+                if not exist venv (
+                    python -m venv venv
+                )
+                call venv\\Scripts\\activate && python -m pip install --upgrade pip
+                '''
             }
         }
 
-        stage('Install Flask (if not installed)') {
+        stage('Install Dependencies') {
             steps {
-                echo 'Installing Flask if not available...'
-                bat '.\\venv\\Scripts\\activate && pip install flask || echo Flask already installed.'
+                echo "Installing required dependencies..."
+                bat '''
+                call venv\\Scripts\\activate
+                if exist requirements.txt (
+                    pip install -r requirements.txt
+                ) else (
+                    pip install flask
+                )
+                '''
             }
         }
 
-        stage('Run Flask App') {
+        stage('Run Flask App (Background)') {
             steps {
-                echo 'Starting Flask application...'
-                bat '.\\venv\\Scripts\\activate && python app.py'
+                echo "Starting Flask application in background..."
+                bat '''
+                start cmd /c "call venv\\Scripts\\activate && python app.py"
+                echo Flask app started successfully!
+                '''
             }
         }
 
         stage('Archive Frontend') {
             steps {
-                echo 'Archiving static frontend files...'
-                archiveArtifacts artifacts: '**/*', onlyIfSuccessful: true
+                echo "Archiving project files..."
+                archiveArtifacts artifacts: '**/*', fingerprint: true
             }
         }
     }
 
     post {
         success {
-            echo '✅ Pipeline completed successfully!'
+            echo "✅ Pipeline completed successfully!"
         }
         failure {
-            echo '❌ Pipeline failed!'
+            echo "❌ Pipeline failed!"
         }
     }
 }
+
 
 
 
