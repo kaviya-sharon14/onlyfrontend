@@ -4,53 +4,34 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo '📦 Fetching source code from GitHub...'
-                deleteDir() // Clean workspace before pulling new code
-                git branch: 'main', url: 'https://github.com/kaviya-sharon14/todo-flask-app.git'
+                echo '📦 Fetching static frontend files from GitHub...'
+                deleteDir() // clean workspace
+                git branch: 'main', url: 'https://github.com/kaviya-sharon14/onlyfrontend.git'
             }
         }
 
-        stage('Setup') {
+        stage('Publish Frontend') {
             steps {
-                echo '⚙️ Installing dependencies...'
+                echo '🚀 Copying frontend files to Jenkins public directory...'
+                // Copy all static files into Jenkins userContent directory
                 bat '''
-                python -m venv venv
-                call venv\\Scripts\\activate
-                pip install --upgrade pip
-                pip install -r requirements.txt
-                '''
-            }
-        }
-
-        stage('Run Flask App') {
-            steps {
-                echo '🚀 Starting Flask app...'
-                bat '''
-                call venv\\Scripts\\activate
-                start /B python app.py
-                timeout /t 10
+                xcopy * "%JENKINS_HOME%\\userContent" /E /Y
                 '''
             }
         }
 
         stage('Finish') {
             steps {
-                echo '✅ Pipeline completed successfully!'
+                echo '✅ Frontend published successfully!'
+                echo '🌍 Open your frontend in browser:'
+                echo '👉 http://localhost:8080/userContent/'
             }
         }
     }
 
     post {
         failure {
-            echo '❌ Pipeline failed. Please check the logs.'
+            echo '❌ Deployment failed. Please check logs.'
         }
     }
 }
-
-
-
-
-
-
-
-
