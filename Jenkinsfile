@@ -17,10 +17,19 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                echo 'Starting local web server...'
-                // This command will serve your static files locally
-                bat 'python -m http.server 8080'
+                echo 'Archiving static files for deployment...'
+                archiveArtifacts artifacts: '**/*', onlyIfSuccessful: true
             }
         }
     }
+
+    post {
+        success {
+            echo 'Frontend pipeline completed successfully ✅'
+        }
+        failure {
+            echo 'Pipeline failed ❌'
+        }
+    }
 }
+
