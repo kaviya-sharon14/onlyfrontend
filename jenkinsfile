@@ -1,0 +1,31 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+                echo "✅ Checked out frontend files from GitHub"
+            }
+        }
+
+        stage('Start Frontend Server') {
+            steps {
+                echo "🚀 Starting local web server..."
+                bat '''
+                python -m http.server 8080
+                '''
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '✅ Frontend server started successfully!'
+            echo '🌐 Open your browser and go to: http://localhost:8080'
+        }
+        failure {
+            echo '❌ Pipeline failed!'
+        }
+    }
+}
