@@ -4,54 +4,49 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo '📦 Fetching source code from public GitHub repo...'
+                echo '📦 Fetching source code from GitHub...'
+                deleteDir() // Clean workspace before pulling new code
                 git branch: 'main', url: 'https://github.com/kaviya-sharon14/todo-flask-app.git'
             }
         }
 
-        stage('Setup Python Environment') {
+        stage('Setup') {
             steps {
-                echo '🐍 Setting up virtual environment...'
-                bat 'python -m venv venv'
-                bat '.\\venv\\Scripts\\activate && python -m pip install --upgrade pip'
+                echo '⚙️ Installing dependencies...'
+                bat '''
+                python -m venv venv
+                call venv\\Scripts\\activate
+                pip install --upgrade pip
+                pip install -r requirements.txt
+                '''
             }
         }
 
-        stage('Install Flask (if not installed)') {
+        stage('Run Flask App') {
             steps {
-                echo '📦 Installing Flask (if missing)...'
-                bat '.\\venv\\Scripts\\activate && pip install flask || echo Flask already installed.'
+                echo '🚀 Starting Flask app...'
+                bat '''
+                call venv\\Scripts\\activate
+                start /B python app.py
+                timeout /t 10
+                '''
             }
         }
 
-        stage('Run Flask App in Background') {
+        stage('Finish') {
             steps {
-                echo '🚀 Launching Flask app in background...'
-                bat 'start /B cmd /C ".\\venv\\Scripts\\activate && python app.py > flask_log.txt 2>&1"'
-                echo '🌐 Flask app running at: http://localhost:5000'
-            }
-        }
-
-        stage('Archive Artifacts') {
-            steps {
-                echo '🗂️ Archiving project files...'
-                archiveArtifacts artifacts: '**/*', onlyIfSuccessful: true
+                echo '✅ Pipeline completed successfully!'
             }
         }
     }
 
     post {
-        success {
-            echo '✅ Pipeline completed successfully!'
-            echo '-----------------------------------------'
-            echo '🌍 Access your app here: http://localhost:5000'
-            echo '-----------------------------------------'
-        }
         failure {
-            echo '❌ Pipeline failed. Check error logs.'
+            echo '❌ Pipeline failed. Please check the logs.'
         }
     }
 }
+
 
 
 
