@@ -5,7 +5,7 @@ pipeline {
         stage('Checkout') {
             steps {
                 echo 'Fetching source code from public GitHub repo...'
-                git branch: 'main', url: 'https://github.com/kaviya-sharon14/todo-flask-app.git'
+                git branch: 'main', url: 'https://github.com/kaviya-sharon14/onlyfrontend.git'
             }
         }
 
@@ -48,6 +48,7 @@ pipeline {
         }
     }
 }
+
 
 
 
