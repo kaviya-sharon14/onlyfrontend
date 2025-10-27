@@ -5,7 +5,7 @@ import sys
 try:
     from flask import Flask, request, jsonify, render_template
 except ImportError:
-    print("⚠️ Flask not found! Installing Flask automatically...")
+    print("Flask not found! Installing Flask automatically...")
     subprocess.check_call([sys.executable, "-m", "pip", "install", "flask"])
     from flask import Flask, request, jsonify, render_template
 
@@ -66,5 +66,6 @@ def delete_task(task_id):
 
 
 if __name__ == '__main__':
-    print("🚀 Starting Flask To-Do App on http://localhost:5000")
-    app.run(host="0.0.0.0", port=5000, debug=True)
+    print("Starting Flask To-Do App...")
+    app.run(debug=True)   #
+
