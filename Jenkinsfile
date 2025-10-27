@@ -4,34 +4,34 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo '📦 Fetching static frontend files from GitHub...'
-                deleteDir() // clean workspace
+                echo '📦 Fetching frontend code from GitHub...'
+                deleteDir()
                 git branch: 'main', url: 'https://github.com/kaviya-sharon14/onlyfrontend.git'
             }
         }
 
-        stage('Publish Frontend') {
+        stage('Deploy Frontend') {
             steps {
-                echo '🚀 Copying frontend files to Jenkins public directory...'
-                // Copy all static files into Jenkins userContent directory
+                echo '🌐 Copying frontend files to Jenkins userContent folder...'
                 bat '''
-                xcopy * "%JENKINS_HOME%\\userContent" /E /Y
+                if not exist "C:\\ProgramData\\Jenkins\\.jenkins\\userContent" mkdir "C:\\ProgramData\\Jenkins\\.jenkins\\userContent"
+                xcopy * "C:\\ProgramData\\Jenkins\\.jenkins\\userContent" /E /Y
                 '''
             }
         }
 
-        stage('Finish') {
+        stage('Access Link') {
             steps {
-                echo '✅ Frontend published successfully!'
-                echo '🌍 Open your frontend in browser:'
-                echo '👉 http://localhost:8080/userContent/'
+                echo '🔗 Your frontend is ready!'
+                echo 'Open in browser: http://localhost:8080/userContent/index.html'
             }
         }
     }
 
     post {
         failure {
-            echo '❌ Deployment failed. Please check logs.'
+            echo '❌ Pipeline failed. Please check the logs.'
         }
     }
 }
+
