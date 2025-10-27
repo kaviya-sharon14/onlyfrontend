@@ -4,64 +4,57 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                echo "Fetching source code from GitHub..."
-                git branch: 'main', url: 'https://github.com/kaviya-sharon14/onlyfrontend.git'
+                echo 'Fetching source code from public GitHub repo...'
+                git branch: 'main', url: 'https://github.com/kaviya-sharon14/todo-flask-app.git'
             }
         }
 
         stage('Setup Python Environment') {
             steps {
-                echo "Setting up virtual environment..."
-                bat '''
-                if not exist venv (
-                    python -m venv venv
-                )
-                call venv\\Scripts\\activate && python -m pip install --upgrade pip
-                '''
+                echo 'Setting up virtual environment...'
+                bat 'python -m venv venv'
+                bat '.\\venv\\Scripts\\activate && python -m pip install --upgrade pip'
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Install Requirements') {
             steps {
-                echo "Installing required dependencies..."
-                bat '''
-                call venv\\Scripts\\activate
-                if exist requirements.txt (
-                    pip install -r requirements.txt
-                ) else (
-                    pip install flask
-                )
-                '''
+                echo 'Installing dependencies...'
+                bat '.\\venv\\Scripts\\activate && pip install -r requirements.txt'
             }
         }
 
-        stage('Run Flask App (Background)') {
+        stage('Run Flask App in Background') {
             steps {
-                echo "Starting Flask application in background..."
-                bat '''
-                start cmd /c "call venv\\Scripts\\activate && python app.py"
-                echo Flask app started successfully!
-                '''
+                echo 'Starting Flask app in background...'
+                // Start Flask app without blocking Jenkins
+                bat 'start /B cmd /C ".\\venv\\Scripts\\activate && python app.py > flask_log.txt 2>&1"'
+                // Wait a few seconds for Flask to start
+                bat 'ping -n 5 127.0.0.1 >nul'
+                echo 'Flask app is running! ✅'
+                echo 'Access it here: http://localhost:5000'
             }
         }
 
-        stage('Archive Frontend') {
+        stage('Archive Artifacts') {
             steps {
-                echo "Archiving project files..."
-                archiveArtifacts artifacts: '**/*', fingerprint: true
+                echo 'Archiving frontend files...'
+                archiveArtifacts artifacts: '**/*', onlyIfSuccessful: true
             }
         }
     }
 
     post {
         success {
-            echo "✅ Pipeline completed successfully!"
+            echo '✅ Pipeline completed successfully!'
+            echo '🌐 Flask is available at: http://localhost:5000'
         }
         failure {
-            echo "❌ Pipeline failed!"
+            echo '❌ Pipeline failed!'
         }
     }
 }
+
 
 
 
